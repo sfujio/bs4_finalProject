@@ -1,0 +1,42 @@
+from bs4 import BeautifulSoup
+import urllib.request as urllib2
+import pandas as pd
+
+soup= BeautifulSoup(urllib2.urlopen('https://www.bookdepository.com/search?searchTerm=python').read(), 'html.parser')
+listBooks=soup.findAll('div', {"class": "book-item"})
+
+titles=[]
+for book in listBooks:
+    try:
+        name=book.h3.a.string.strip()
+        titles.append(name)
+    except:
+        pass
+
+authors=[]
+for author in listBooks:
+    try:
+        authorName=author.p.a.string.strip()
+        authors.append(authorName)
+    except:
+        pass
+
+dates=[]
+for date in listBooks:
+    try:
+        dateTag=date.find_all('p')
+        publicationDate=dateTag[1].contents[0].string.strip()
+        dates.append(publicationDate)
+    except:
+        pass
+
+keys = ['Title', 'Author', 'Publication_date']
+bookData=pd.DataFrame(
+    {'Title':titles,
+     'Author':authors,
+     'Publication_date':dates
+    },
+    columns=keys)
+
+bookData.to_csv('bs4_FinalProject.csv', index=False)
+
